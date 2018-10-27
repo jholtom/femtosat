@@ -1,5 +1,5 @@
 ### Femtosat Radio Tutorial
-Hi, Welcome to straya's tutorial on the basics of the femtosat radio!
+Hi, Welcome to straya's (jholtom) tutorial on the basics of the femtosat radio!
 
 ### Includes
 ```
@@ -29,11 +29,14 @@ void setup(){
     ......
     radio.initialize(FREQUENCY, MYNODEID, NETWORKID);
     radio.setHighPower();
+    radio.setPowerLevel(20);
+    radio.encrypt(0);
     ......
 }
 ```
-Next up, you need to add these two lines to your `setup()` function.  They configure the radio to use the given frequency and its syncword's.
-The second line sets the radio to use the correct power levels for our application.
+Next up, you need to add these four lines to your `setup()` function.  They configure the radio to use the given frequency and its syncword's.
+The second and third lines sets the radio to use the correct power levels for our application.
+The fourth disables encryption.
 
 ### Using the radio!
 ```

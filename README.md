@@ -1,5 +1,14 @@
-# femtosat
-    - Contains libraries for femtosat tranmission (femtolib)
-    - Contains GNURadio graphs for Ground Station operation (GSRX)
+# Femtosat
+### By Jacob Holtom (jholtom) and Jacob Willis (willisj2)
 
-#### Jacob Holtom & Jacob Willis
+## Radio Test
+- Simple Arduino Program to test the RFM69 on the BYU Femtosat Competition boards 
+
+## RFM69
+- modified Arduino library for the BYU Femtosat Competition
+
+## GSRX
+- GNURadio flowgraph that handles reception on the ground for the BYU Femtosat Competition
+
+## HOWTO
+- See the how to guide [HERE](HOWTO.md)
