@@ -42,4 +42,4 @@ The fourth disables encryption.
 ```
 radio.send(TONODEID, sendbuffer, sendlength);
 ```
-This is very simple to use, `sendbuffer` is a `void *`, but you may find it easy to use a character array or whatever else you like.  Sendlength is the length of the buffer you are passing in.
+This is very simple to use, `sendbuffer` is a `void *`, but you may find it easy to use a character array or whatever else you like.  `sendlength` is the length of the buffer you are passing in.
