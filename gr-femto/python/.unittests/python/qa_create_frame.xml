@@ -1,0 +1,12 @@
+<testsuite errors="1" failures="0" name="unittest.suite.TestSuite" tests="1" time="0.000">
+  <testcase classname="__main__.qa_create_frame" name="test_001_t" time="0.0002">
+    <error type="exceptions.TypeError">__init__() takes exactly 8 arguments (1 given)
+  File "/usr/lib64/python2.7/unittest/case.py", line 367, in run
+    testMethod()
+  File "qa_create_frame.py", line 64, in test_001_t
+    crt_frame = create_frame()
+    </error>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
