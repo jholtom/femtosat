@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Top Block
-# Generated: Tue Nov 27 12:02:10 2018
+# Generated: Tue Nov 27 13:41:14 2018
 ##################################################
 
 if __name__ == '__main__':
@@ -23,15 +23,14 @@ from gnuradio import eng_notation
 from gnuradio import filter
 from gnuradio import gr
 from gnuradio import qtgui
-from gnuradio import uhd
 from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
 from optparse import OptionParser
 import numpy
+import pmt
 import satellites
 import sip
 import sys
-import time
 from gnuradio import qtgui
 
 
@@ -75,18 +74,6 @@ class top_block(gr.top_block, Qt.QWidget):
         ##################################################
         # Blocks
         ##################################################
-        self.uhd_usrp_source_0 = uhd.usrp_source(
-        	",".join(("", "")),
-        	uhd.stream_args(
-        		cpu_format="fc32",
-        		channels=range(1),
-        	),
-        )
-        self.uhd_usrp_source_0.set_samp_rate(samp_rate)
-        self.uhd_usrp_source_0.set_center_freq(freq, 0)
-        self.uhd_usrp_source_0.set_gain(25, 0)
-        self.uhd_usrp_source_0.set_antenna('TX/RX', 0)
-        self.uhd_usrp_source_0.set_bandwidth(baud_rate*2, 0)
         self.satellites_fixedlen_tagger_0 = satellites.fixedlen_tagger('sync', 'frame_len', frame_length * 8, numpy.byte)
         self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
         	1024, #size
@@ -143,9 +130,12 @@ class top_block(gr.top_block, Qt.QWidget):
         self.digital_correlate_access_code_tag_xx_0 = digital.correlate_access_code_tag_bb('101010100010110100000000', 0, 'sync')
         self.blocks_unpacked_to_packed_xx_0_0 = blocks.unpacked_to_packed_bb(1, gr.GR_MSB_FIRST)
         self.blocks_udp_sink_0 = blocks.udp_sink(gr.sizeof_char*1, '127.0.0.1', 43500, 66, True)
+        self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
         self.blocks_tagged_stream_to_pdu_0 = blocks.tagged_stream_to_pdu(blocks.byte_t, 'frame_len')
         self.blocks_tagged_stream_multiply_length_0 = blocks.tagged_stream_multiply_length(gr.sizeof_char*1, 'frame_len', 1.0/8.0)
         self.blocks_pdu_to_tagged_stream_0 = blocks.pdu_to_tagged_stream(blocks.byte_t, 'frame_len')
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/jholtom/jacobwillis.iq', False)
+        self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
         self.blocks_file_sink_1 = blocks.file_sink(gr.sizeof_char*1, '/home/jholtom/output.bin', False)
         self.blocks_file_sink_1.set_unbuffered(False)
         self.band_pass_filter_0 = filter.fir_filter_ccc(1, firdes.complex_band_pass(
@@ -159,14 +149,15 @@ class top_block(gr.top_block, Qt.QWidget):
         self.msg_connect((self.blocks_tagged_stream_to_pdu_0, 'pdus'), (self.blocks_pdu_to_tagged_stream_0, 'pdus'))
         self.connect((self.band_pass_filter_0, 0), (self.digital_gmsk_demod_0, 0))
         self.connect((self.band_pass_filter_0, 0), (self.qtgui_freq_sink_x_0, 0))
+        self.connect((self.blocks_file_source_0, 0), (self.blocks_throttle_0, 0))
         self.connect((self.blocks_pdu_to_tagged_stream_0, 0), (self.blocks_file_sink_1, 0))
         self.connect((self.blocks_pdu_to_tagged_stream_0, 0), (self.blocks_udp_sink_0, 0))
         self.connect((self.blocks_tagged_stream_multiply_length_0, 0), (self.blocks_tagged_stream_to_pdu_0, 0))
+        self.connect((self.blocks_throttle_0, 0), (self.band_pass_filter_0, 0))
         self.connect((self.blocks_unpacked_to_packed_xx_0_0, 0), (self.blocks_tagged_stream_multiply_length_0, 0))
         self.connect((self.digital_correlate_access_code_tag_xx_0, 0), (self.satellites_fixedlen_tagger_0, 0))
         self.connect((self.digital_gmsk_demod_0, 0), (self.digital_correlate_access_code_tag_xx_0, 0))
         self.connect((self.satellites_fixedlen_tagger_0, 0), (self.blocks_unpacked_to_packed_xx_0_0, 0))
-        self.connect((self.uhd_usrp_source_0, 0), (self.band_pass_filter_0, 0))
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "top_block")
@@ -186,7 +177,6 @@ class top_block(gr.top_block, Qt.QWidget):
     def set_baud_rate(self, baud_rate):
         self.baud_rate = baud_rate
         self.set_samp_rate(self.samp_sym*self.baud_rate)
-        self.uhd_usrp_source_0.set_bandwidth(self.baud_rate*2, 0)
         self.band_pass_filter_0.set_taps(firdes.complex_band_pass(1, self.samp_rate, -self.baud_rate*2, self.baud_rate*2, 2000, firdes.WIN_HAMMING, 6.76))
 
     def get_trans_width(self):
@@ -200,8 +190,8 @@ class top_block(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
         self.qtgui_freq_sink_x_0.set_frequency_range(self.freq, self.samp_rate)
+        self.blocks_throttle_0.set_sample_rate(self.samp_rate)
         self.band_pass_filter_0.set_taps(firdes.complex_band_pass(1, self.samp_rate, -self.baud_rate*2, self.baud_rate*2, 2000, firdes.WIN_HAMMING, 6.76))
 
     def get_freq(self):
@@ -209,7 +199,6 @@ class top_block(gr.top_block, Qt.QWidget):
 
     def set_freq(self, freq):
         self.freq = freq
-        self.uhd_usrp_source_0.set_center_freq(self.freq, 0)
         self.qtgui_freq_sink_x_0.set_frequency_range(self.freq, self.samp_rate)
 
     def get_frame_length(self):
